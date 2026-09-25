@@ -30,7 +30,7 @@
   /* the darkest colour each overlay text can take; tests/verify.py measures contrast against the video with these */
   --tc-kicker:#ecdca6; --tc-title:#d4b264; --tc-sub:#fff6e2;
   /* type scale (4 sizes) and 8-pt spacing */
-  --fs-s:14px; --fs-m:17px; --fs-l:22px; --fs-xl:clamp(34px,11.2vw,46px);
+  --fs-s:14px; --fs-m:17px; --fs-l:19px; --fs-xl:clamp(30px,9.6vw,40px);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#070a12}
@@ -40,35 +40,27 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;-webki
 :focus-visible{outline:2px solid var(--gold-bright);outline-offset:3px}
 
 /* The living background: a seamless loop (the Kling clip forward, then reversed). The poster paints first. */
-.bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.bg{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 100%;z-index:0}
 .scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
   background:linear-gradient(180deg,rgba(var(--night),.5) 0%,rgba(var(--night),0) 12%,rgba(var(--night),0) 34%,
     rgba(var(--night),.5) 48%,rgba(var(--night),.78) 62%,rgba(var(--night),.9) 100%)}
 
 .ui{position:relative;z-index:2;height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;
   padding:calc(env(safe-area-inset-top) + 8px) 16px calc(env(safe-area-inset-bottom) + 16px)}
-.top{display:flex;justify-content:flex-end}
-.motion{width:44px;height:44px;display:grid;place-items:center;border-radius:50%}
-.motion span{width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:rgba(var(--night),.45);
-  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px rgba(236,220,166,.28)}
-.motion svg{width:16px;height:16px;color:var(--cream)}
-.motion .i-play,.motion.is-paused .i-pause{display:none}
-.motion.is-paused .i-play{display:block}
-
 /* title group: eyebrow, title and subtitle belong together (proximity) over a dark halo for legibility */
-.titles{position:relative;text-align:center;margin-top:auto;margin-bottom:24px}
+.titles{position:relative;text-align:center;margin-top:auto;margin-bottom:16px}
 /* a soft-edged dark band behind the whole title group (a film title card): the cross rises out of it,
    and every line of text keeps >= 4.5:1 against the brightest frame of the loop (tests/verify.py) */
-.titles::before{content:"";position:absolute;inset:-44px -16px -32px;z-index:-1;pointer-events:none;
-  background:linear-gradient(180deg,rgba(var(--night),0) 0%,rgba(var(--night),.86) 24%,rgba(var(--night),.86) 78%,rgba(var(--night),0) 100%);
+.titles::before{content:"";position:absolute;inset:-28px -16px -24px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(var(--night),0) 0%,rgba(var(--night),.86) 12%,rgba(var(--night),.86) 80%,rgba(var(--night),0) 100%);
   -webkit-mask:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%);
   mask:linear-gradient(90deg,transparent 0,#000 12%,#000 88%,transparent 100%)}
-.kicker{font:600 var(--fs-s)/1.4 "Inter";letter-spacing:.14em;text-transform:uppercase;color:var(--tc-kicker);
-  margin-bottom:12px;text-wrap:balance;text-shadow:0 1px 8px rgba(0,0,0,.7)}
-h1{font:700 var(--fs-xl)/.98 "Cinzel Decorative",Georgia,serif;letter-spacing:.04em;
+.kicker{font:600 var(--fs-s)/1.4 "Inter";letter-spacing:.12em;text-transform:uppercase;color:var(--tc-kicker);
+  margin-bottom:8px;text-wrap:balance;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+h1{font:700 var(--fs-xl)/.95 "Cinzel Decorative",Georgia,serif;letter-spacing:.04em;
    background:var(--grad-gold);-webkit-background-clip:text;background-clip:text;color:transparent;
    filter:drop-shadow(0 2px 14px rgba(0,0,0,.9)) drop-shadow(0 0 2px rgba(0,0,0,.7))}
-.sub{font:italic 500 var(--fs-l)/1.28 "Cormorant Garamond",Georgia,serif;color:var(--tc-sub);max-width:30ch;margin:12px auto 0;
+.sub{font:italic 500 var(--fs-l)/1.22 "Cormorant Garamond",Georgia,serif;color:var(--tc-sub);max-width:32ch;margin:8px auto 0;
   text-wrap:balance;text-shadow:0 1px 12px rgba(0,0,0,.9)}
 
 .panel{border-radius:24px;padding:16px;background:rgba(10,12,20,.46);
@@ -87,7 +79,7 @@ h1{font:700 var(--fs-xl)/.98 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
 .share svg{width:20px;height:20px}
 @media (max-width:359px){.scan{flex-direction:column;text-align:center}}
 /* short phones (iPhone SE): a slightly smaller QR and subtitle keep the title below the crossbar */
-@media (max-height:700px){.qr-btn{flex-basis:136px}.qr{width:136px;height:136px}.sub{font-size:20px}.titles{margin-bottom:16px}}
+@media (max-height:740px){.panel{padding:12px}.scan{gap:12px}.qr-btn{flex-basis:128px}.qr{width:128px;height:128px}.share{height:52px;margin-top:12px}}
 
 /* tap the QR: full-screen on white, for scanning across a table */
 .qr-overlay{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:24px;
@@ -109,8 +101,6 @@ h1{font:700 var(--fs-xl)/.98 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
 
 /* short screens (landscape phones): let the page scroll so nothing is cut off */
 @media (max-height:560px){body{overflow:auto}.ui{height:auto;min-height:100%}}
-/* reduced motion: the still frame instead of the loop, and no pause control needed */
-@media (prefers-reduced-motion:reduce){.bg,.motion{display:none}body{background:#070a12 url(bg.jpg) center/cover}}
 /* measurement mode for tests/verify.py: hide the overlay text, keep everything behind it */
 .measure-bg .kicker,.measure-bg h1,.measure-bg .sub{visibility:hidden}
 </style>
@@ -123,13 +113,6 @@ h1{font:700 var(--fs-xl)/.98 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
 <div class="scrim"></div>
 
 <main class="ui">
-  <div class="top">
-    <button class="motion" id="motion" type="button" aria-pressed="false" aria-label="Pause background animation"><span>
-      <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-      <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
-    </span></button>
-  </div>
-
   <header class="titles">
     <p class="kicker">Pope Leo XIV · First Encyclical</p>
     <h1>Magnifica<br>Humanitas</h1>
@@ -189,25 +172,16 @@ h1{font:700 var(--fs-xl)/.98 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
     }
   });
 
-  // Background motion can be paused (WCAG 2.2.2) and the choice is remembered on this device.
-  // In Low Power Mode iOS blocks autoplay, so the same button starts the loop.
+  // The loop always plays. iOS can hold it back (Low Power Mode blocks autoplay; returning from the background
+  // pauses it), so start it on load, whenever the card comes back into view, and on the first touch anywhere.
   const video = document.querySelector('.bg');
-  const motion = document.getElementById('motion');
-  const syncMotion = () => {
-    motion.classList.toggle('is-paused', video.paused);
-    motion.setAttribute('aria-pressed', String(video.paused));
-  };
-  video.addEventListener('play', syncMotion);
-  video.addEventListener('pause', syncMotion);
-  let savedMotion = null;
-  try { savedMotion = localStorage.getItem('magnifica-motion'); } catch (e) {}
-  if (savedMotion === 'paused') video.pause();
-  syncMotion();
-  motion.addEventListener('click', () => {
-    const pause = !video.paused;
-    if (pause) video.pause(); else video.play().catch(() => {});
-    try { localStorage.setItem('magnifica-motion', pause ? 'paused' : 'playing'); } catch (e) {}
-  });
+  try { localStorage.removeItem('magnifica-motion'); } catch (e) {} // forget a pause saved by an earlier version
+  const playLoop = () => { if (video.paused) video.play().catch(() => {}); };
+  playLoop();
+  video.addEventListener('canplay', playLoop);
+  window.addEventListener('pageshow', playLoop);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) playLoop(); });
+  ['touchstart', 'pointerdown'].forEach((type) => document.addEventListener(type, playLoop, { passive: true }));
 
   // Tap the QR: show it full screen on white; tap anywhere, the close button or Escape to return.
   const overlay = document.getElementById('qrOverlay');

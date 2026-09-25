@@ -67,10 +67,15 @@ Object.assign(out, await evaluate(`(() => {
                      sub: css.getPropertyValue('--tc-sub').trim() } };
 })()`));
 await shot('phone-390.png');
+out.autoplay = await evaluate(`(async () => { const v = document.querySelector('.bg'), t1 = v.currentTime;
+  await new Promise((r) => setTimeout(r, 1200));
+  return { paused: v.paused, advanced: v.currentTime > t1, loop: v.loop, muted: v.muted, control: !!document.getElementById('motion') };
+})()`);
 
 // 2. Contrast: hide the overlay text, freeze the loop at several moments, capture what sits behind the text
 out.contrast = [];
-for (const [w, h] of [[390, 844], [375, 667]]) {
+// 390x844: Home Screen app; 390x660: Safari with its toolbars; 390x632: Safari opened from Messages (banner); 375x667: SE
+for (const [w, h] of [[390, 844], [390, 660], [390, 632], [375, 667]]) {
   await viewport(w, h); await sleep(400);
   for (const t of [0.4, 2.8, 5.2, 7.6]) {
     await evaluate(`(async () => { const v = document.querySelector('.bg'); v.pause(); v.currentTime = ${t};
@@ -85,15 +90,12 @@ for (const [w, h] of [[390, 844], [375, 667]]) {
 await evaluate(`document.querySelector('.bg').play().catch(() => {})`);
 await viewport(390, 844); await sleep(400);
 
-// 3. Pause control (WCAG 2.2.2): toggles the loop, reflects state, and is remembered
-out.motion = await evaluate(`(async () => {
-  const v = document.querySelector('.bg'), b = document.getElementById('motion');
-  await v.play().catch(() => {}); await new Promise((r) => setTimeout(r, 200));
-  const before = v.paused; b.click(); await new Promise((r) => setTimeout(r, 200));
-  const afterPause = { paused: v.paused, pressed: b.getAttribute('aria-pressed'), saved: localStorage.getItem('magnifica-motion') };
-  b.click(); await new Promise((r) => setTimeout(r, 300));
-  return { before, afterPause, afterResume: { paused: v.paused, pressed: b.getAttribute('aria-pressed') }, label: b.getAttribute('aria-label') };
-})()`);
+// 3. A pause saved by the earlier version (with a pause button) must not stop the loop, and is forgotten
+await evaluate(`localStorage.setItem('magnifica-motion', 'paused')`);
+await send('Page.reload'); await sleep(2500);
+out.afterOldPause = await evaluate(`(async () => { const v = document.querySelector('.bg'), t1 = v.currentTime;
+  await new Promise((r) => setTimeout(r, 1200));
+  return { paused: v.paused, advanced: v.currentTime > t1, saved: localStorage.getItem('magnifica-motion') }; })()`);
 
 // 4. Full-screen QR: opens with focus on Close, scans, closes on Escape with focus back on the QR
 out.overlay = { opened: await evaluate(`(async () => { document.getElementById('qrBtn').click();

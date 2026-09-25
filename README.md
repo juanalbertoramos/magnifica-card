@@ -19,13 +19,15 @@ Open it on an iPhone in Safari and choose **Share → Add to Home Screen**. Then
 
 ## Verify
 
-`python3 tests/verify.py`, which needs Google Chrome, Node 22+ and Python with OpenCV and numpy. It runs 58 checks:
+`python3 tests/verify.py`, which needs Google Chrome, Node 22+ and Python with OpenCV and numpy. It runs 60 checks:
 - **Layout:** no sideways overflow at 390 and 320 px; the whole panel on screen on an iPhone SE; landscape scrolls.
+- **Cross stays visible:** the crossbar is bright and ends ≥ 16 px above the title group at every phone height (Home Screen, Safari, Safari from Messages, SE).
 - **Contrast:** the eyebrow, title and subtitle each keep **≥ 4.5:1** against the brightest nearby pixel. That's
-  measured at 9 points, on 4 frames of the loop, at 2 phone sizes, with the text hidden.
+  measured at 9 points, on 4 frames of the loop, at 4 phone heights, with the text hidden.
 - **QR:** the tile is ≥ 148 px and decodes to the reader URL. The full-screen QR (tap the code) also decodes, with
   focus moving to Close and back (Escape closes it).
-- **Pause control (WCAG 2.2.2):** it pauses and resumes the loop, reports its state, and is remembered on the device.
+- **The loop always plays:** it autoplays muted and looping, with no pause control (by design). A pause saved by an
+  earlier version is cleared. It restarts on load, on return to the app, and on the first touch, which covers iOS Low Power Mode.
 - **Share:** the Share payload, and the clipboard fallback.
 - **Offline:** the page renders through the service worker with the server cut.
 

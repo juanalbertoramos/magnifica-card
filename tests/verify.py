@@ -67,6 +67,8 @@ for snippet in [
 check("HEVC source listed before the H.264 fallback", 0 <= html.find("bg-hevc.mp4") < html.find('src="bg.mp4"'))
 check("no og:url (keeps iMessage cache-busting possible)", "og:url" not in html)
 check("no redundant 'Open it here' link", "Open it here" not in html)
+check("video tag autoplays and loops", "autoplay" in html and " loop " in html)
+check("nothing swaps the loop for a still (always plays)", "prefers-reduced-motion" not in html)
 
 sw = (ROOT / "sw.js").read_text(encoding="utf-8") if (ROOT / "sw.js").exists() else ""
 for f in ["index.html", *STATIC_ASSETS]:
@@ -104,13 +106,13 @@ if page.exists():
               land["overflowY"] != "hidden" and land["panelBottom"] <= land["scrollHeight"] + 1,
               f"overflowY={land['overflowY']} panelBottom={land['panelBottom']:.0f} scrollHeight={land['scrollHeight']}")
 
-        m = b["motion"]
-        check("pause control has an accessible name", bool(m.get("label")), m.get("label"))
-        check("pause control pauses the loop and says so",
-              m["afterPause"]["paused"] is True and m["afterPause"]["pressed"] == "true", str(m["afterPause"]))
-        check("pause choice is remembered on the device", m["afterPause"]["saved"] == "paused")
-        check("pause control resumes the loop", m["afterResume"]["paused"] is False and m["afterResume"]["pressed"] == "false",
-              str(m["afterResume"]))
+        ap = b["autoplay"]
+        check("the loop plays by itself (muted, looping)",
+              not ap["paused"] and ap["advanced"] and ap["loop"] and ap["muted"], str(ap))
+        check("no pause control", not ap["control"])
+        op = b["afterOldPause"]
+        check("a pause saved by the earlier version is ignored and cleared",
+              not op["paused"] and op["advanced"] and op["saved"] is None, str(op))
 
         ov = b["overlay"]
         check("tapping the QR opens it full screen, focus on Close",
@@ -155,6 +157,26 @@ if page.exists():
             c, where = worst[key]
             check(f"{key} contrast >= {MIN_CONTRAST}:1 over the moving background", c >= MIN_CONTRAST,
                   f"worst {c:.1f}:1 at {where}")
+
+        # The cross must stay clearly visible: its crossbar (the brightest wide band above the text) is bright
+        # and ends at least 16 px above the eyebrow line, at every phone height and loop frame.
+        min_gap, gap_where, dim = 999, "", []
+        for cap in b["contrast"]:
+            im = cv2.cvtColor(cv2.imread(str(OUT / cap["file"])), cv2.COLOR_BGR2RGB).astype(float) / 255
+            bright = 0.2126 * im[..., 0] + 0.7152 * im[..., 1] + 0.0722 * im[..., 2]
+            text_top = int(cap["kicker"]["y"] * 2)
+            rows = bright[:text_top, int(bright.shape[1] * 0.25): int(bright.shape[1] * 0.75)].mean(axis=1)
+            peak = int(rows.argmax())
+            bottom = peak
+            while bottom + 1 < len(rows) and rows[bottom + 1] >= 0.5 * rows[peak]:
+                bottom += 1
+            if rows[peak] < 0.5:
+                dim.append(f"{cap['file']} peak {rows[peak]:.2f}")
+            gap = cap["kicker"]["y"] - bottom / 2
+            if gap < min_gap:
+                min_gap, gap_where = gap, cap["file"]
+        check("the crossbar is bright and clear of the title at every phone height",
+              min_gap >= 16 and not dim, f"smallest gap {min_gap:.0f} px at {gap_where}" + (f"; dim: {dim}" if dim else ""))
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)
