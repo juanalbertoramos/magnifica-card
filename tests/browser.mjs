@@ -29,7 +29,7 @@ const server = createServer(async (req, res) => {
   }
 }).listen(PORT);
 
-const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--autoplay-policy=no-user-gesture-required',
+const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu',
   `--remote-debugging-port=${DEVTOOLS}`, `--user-data-dir=/tmp/magnifica-card-test-${Date.now()}`, 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let target;
