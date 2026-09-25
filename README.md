@@ -5,7 +5,8 @@ first encyclical, *On Safeguarding the Human Person in the Time of Artificial In
 
 Open it on an iPhone in Safari and choose **Share → Add to Home Screen**. Then:
 - in person, people scan the QR;
-- anywhere else, tap **Share** to send the reader link by WhatsApp, Messages, Mail, AirDrop or Copy.
+- anywhere else, tap **Share** to send the reader link by WhatsApp, Messages, Mail, AirDrop or Copy;
+- to keep it in Apple Wallet, tap the QR, then **Add to Apple Wallet**.
 
 **Live:** https://juanalbertoramos.github.io/magnifica-card/
 
@@ -30,6 +31,18 @@ Open it on an iPhone in Safari and choose **Share → Add to Home Screen**. Then
   earlier version is cleared. It restarts on load, on return to the app, and on the first touch, which covers iOS Low Power Mode.
 - **Share:** the Share payload, and the clipboard fallback.
 - **Offline:** the page renders through the service worker with the server cut.
+
+## Apple Wallet pass
+
+`magnifica.pkpass` is a signed pass. On iOS 27 it uses the poster layout, with the illuminated cross as the
+artwork, and it falls back to the generic layout on earlier iOS. Its QR opens the reader.
+
+- **Content:** edit `wallet/pass.json`. **Images:** `python3 build/make-wallet-images.py` regenerates every size from the approved artwork.
+- **Sign and package:** `zsh build/make-pass.sh`. The key and certificates stay outside the repo, in `~/.config/magnifica-card/pass/`
+  (Pass Type ID `pass.com.kaelumvisio.magnifica`, team `T76T3LTG9C`). The certificate expires on **2027-10-25**:
+  renew it in the Apple Developer portal before then, and re-run the script.
+- **Verify:** `python3 tests/verify_pass.py` runs 32 checks: bundle layout, exact image sizes, manifest hashes, the
+  signature and its chain to Apple WWDR G4, the `pass.json` content, and the link in the full-screen QR view.
 
 ## Video encodes
 

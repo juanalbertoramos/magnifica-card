@@ -82,8 +82,8 @@ h1{font:700 var(--fs-xl)/.95 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
 @media (max-height:740px){.panel{padding:12px}.scan{gap:12px}.qr-btn{flex-basis:128px}.qr{width:128px;height:128px}.share{height:52px;margin-top:12px}}
 
 /* tap the QR: full-screen on white, for scanning across a table */
-.qr-overlay{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:24px;
-  background:rgba(var(--night),.94);opacity:0;transition:opacity .2s}
+.qr-overlay{position:fixed;inset:0;z-index:5;display:grid;place-items:center;align-content:center;gap:16px;padding:24px;
+  background:rgba(var(--night),.97);opacity:0;transition:opacity .2s}
 .qr-overlay.open{opacity:1}
 .qr-overlay[hidden]{display:none}
 .qr-card{width:min(88vw,420px);background:#fff;border-radius:24px;padding:24px;text-align:center;color:var(--ink)}
@@ -92,6 +92,10 @@ h1{font:700 var(--fs-xl)/.95 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
 .qr-close{position:fixed;top:calc(env(safe-area-inset-top) + 8px);right:16px;width:44px;height:44px;border-radius:50%;
   display:grid;place-items:center;background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
 .qr-close svg{width:18px;height:18px;color:#fff}
+/* a plain text link, not a copy of Apple's badge; iOS answers it with its own Add to Wallet sheet */
+.wallet-link{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;color:var(--gold-bright);
+  font:500 var(--fs-m)/1.3 "Inter";text-decoration:underline;text-underline-offset:4px}
+.wallet-link[hidden]{display:none}
 
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 96px);z-index:4;transform:translate(-50%,16px);opacity:0;
   max-width:86vw;padding:8px 16px;border-radius:999px;background:rgba(10,12,20,.9);color:var(--cream);
@@ -138,6 +142,7 @@ h1{font:700 var(--fs-xl)/.95 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
     <img src="qr.svg" width="372" height="372" alt="QR code that opens the Magnifica Humanitas reader">
     <p>Scan to read <em>Magnifica Humanitas</em></p>
   </div>
+  <a class="wallet-link" id="walletLink" href="magnifica.pkpass">Add to Apple Wallet</a>
   <button class="qr-close" id="qrClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -183,13 +188,20 @@ h1{font:700 var(--fs-xl)/.95 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
   document.addEventListener('visibilitychange', () => { if (!document.hidden) playLoop(); });
   ['touchstart', 'pointerdown'].forEach((type) => document.addEventListener(type, playLoop, { passive: true }));
 
-  // Tap the QR: show it full screen on white; tap anywhere, the close button or Escape to return.
+  // Tap the QR: show it full screen on white; tap anywhere (except the Wallet link), the close button or Escape to return.
   const overlay = document.getElementById('qrOverlay');
   const qrBtn = document.getElementById('qrBtn');
   const qrClose = document.getElementById('qrClose');
+  const walletLink = document.getElementById('walletLink');
+  // Only Apple devices open a Wallet pass; anywhere else the link would just download a file.
+  if (!/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)) walletLink.hidden = true;
+  walletLink.addEventListener('click', (e) => e.stopPropagation()); // keep the QR view open behind the Wallet sheet
   function onOverlayKey(e) {
     if (e.key === 'Escape') closeQR();
-    if (e.key === 'Tab') { e.preventDefault(); qrClose.focus(); }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      (document.activeElement === qrClose && !walletLink.hidden ? walletLink : qrClose).focus();
+    }
   }
   function openQR() {
     overlay.hidden = false;
