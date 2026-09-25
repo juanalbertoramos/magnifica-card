@@ -1,0 +1,56 @@
+{
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.com.kaelumvisio.magnifica",
+  "teamIdentifier": "T76T3LTG9C",
+  "serialNumber": "magnifica-card-1",
+  "organizationName": "Magnifica Humanitas",
+  "description": "A card to share Pope Leo XIV's first encyclical, Magnifica Humanitas",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "labelColor": "rgb(236, 220, 166)",
+  "backgroundColor": "rgb(28, 37, 58)",
+  "sharingProhibited": false,
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "https://juanalbertoramos.github.io/magnifica-humanitas/",
+      "messageEncoding": "iso-8859-1",
+      "altText": "Scan to read"
+    }
+  ],
+  "posterGeneric": {
+    "headerFields": [
+      { "key": "encyclical", "label": "Encyclical", "value": "Pope Leo XIV" }
+    ],
+    "primaryFields": [
+      { "key": "title", "value": "Magnifica Humanitas" },
+      { "key": "dated", "label": "Dated", "value": "15 May 2026" }
+    ],
+    "footerFields": [
+      { "key": "footer", "value": "Scan to read · The human person & AI" }
+    ],
+    "backFields": [
+      { "key": "about", "label": "About", "value": "Pope Leo XIV's first encyclical, on safeguarding the human person in the time of artificial intelligence. Scan the code to open a beautiful reading edition on your phone: read it or listen to it." },
+      { "key": "read", "label": "Read it", "value": "https://juanalbertoramos.github.io/magnifica-humanitas/" },
+      { "key": "card", "label": "This card", "value": "https://juanalbertoramos.github.io/magnifica-card/" },
+      { "key": "note", "label": "Note", "value": "An unofficial reader's edition. Text © Libreria Editrice Vaticana." }
+    ]
+  },
+  "generic": {
+    "primaryFields": [
+      { "key": "title", "label": "Encyclical", "value": "Magnifica Humanitas" }
+    ],
+    "secondaryFields": [
+      { "key": "author", "label": "By", "value": "Pope Leo XIV" },
+      { "key": "dated", "label": "Dated", "value": "15 May 2026" }
+    ],
+    "auxiliaryFields": [
+      { "key": "on", "label": "On", "value": "The human person & AI" }
+    ],
+    "backFields": [
+      { "key": "about", "label": "About", "value": "Pope Leo XIV's first encyclical, on safeguarding the human person in the time of artificial intelligence. Scan the code to open a beautiful reading edition on your phone: read it or listen to it." },
+      { "key": "read", "label": "Read it", "value": "https://juanalbertoramos.github.io/magnifica-humanitas/" },
+      { "key": "card", "label": "This card", "value": "https://juanalbertoramos.github.io/magnifica-card/" },
+      { "key": "note", "label": "Note", "value": "An unofficial reader's edition. Text © Libreria Editrice Vaticana." }
+    ]
+  }
+}
