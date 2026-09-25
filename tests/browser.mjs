@@ -29,8 +29,8 @@ const server = createServer(async (req, res) => {
   }
 }).listen(PORT);
 
-const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', `--remote-debugging-port=${DEVTOOLS}`,
-  `--user-data-dir=/tmp/magnifica-card-test-${Date.now()}`, 'about:blank'], { stdio: 'ignore' });
+const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--autoplay-policy=no-user-gesture-required',
+  `--remote-debugging-port=${DEVTOOLS}`, `--user-data-dir=/tmp/magnifica-card-test-${Date.now()}`, 'about:blank'], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let target;
 for (let i = 0; i < 40 && !target; i++) {
@@ -46,29 +46,77 @@ ws.onmessage = (e) => {
 await new Promise((r) => (ws.onopen = r));
 const send = (method, params = {}) => new Promise((res) => { const i = ++id; pending.set(i, res); ws.send(JSON.stringify({ id: i, method, params })); });
 const evaluate = async (expression) => (await send('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })).result.value;
+const shot = async (name) => writeFileSync(join(OUT, name), Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+const viewport = (width, height) => send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 2, mobile: true });
+const rect = (sel) => `(() => { const r = document.querySelector('${sel}').getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; })()`;
 
 await send('Page.enable'); await send('Runtime.enable');
+mkdirSync(OUT, { recursive: true });
 const out = {};
 
 // 1. Layout at iPhone 14/15 size, plus a screenshot for the QR decode
-await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await viewport(390, 844);
 await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` });
 await sleep(3000);
 Object.assign(out, await evaluate(`(() => {
-  const img = document.getElementById('qr'), q = img.getBoundingClientRect();
+  const img = document.getElementById('qr'), q = img.getBoundingClientRect(), css = getComputedStyle(document.documentElement);
   return { vw: document.documentElement.clientWidth, sw: document.documentElement.scrollWidth,
-           qr: { x: q.x, y: q.y, w: q.width, h: q.height }, qrLoaded: img.naturalWidth > 0, title: document.title };
+           qr: { x: q.x, y: q.y, w: q.width, h: q.height }, qrLoaded: img.naturalWidth > 0, title: document.title,
+           videoSrc: document.querySelector('.bg').currentSrc.split('/').pop(),
+           tokens: { kicker: css.getPropertyValue('--tc-kicker').trim(), title: css.getPropertyValue('--tc-title').trim(),
+                     sub: css.getPropertyValue('--tc-sub').trim() } };
 })()`));
-mkdirSync(OUT, { recursive: true });
-writeFileSync(join(OUT, 'phone-390.png'), Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'));
+await shot('phone-390.png');
 
-// 2. Small phone (iPhone SE): the whole panel must stay on screen
-await send('Emulation.setDeviceMetricsOverride', { width: 375, height: 667, deviceScaleFactor: 2, mobile: true });
-await sleep(500);
+// 2. Contrast: hide the overlay text, freeze the loop at several moments, capture what sits behind the text
+out.contrast = [];
+for (const [w, h] of [[390, 844], [375, 667]]) {
+  await viewport(w, h); await sleep(400);
+  for (const t of [0.4, 2.8, 5.2, 7.6]) {
+    await evaluate(`(async () => { const v = document.querySelector('.bg'); v.pause(); v.currentTime = ${t};
+      await new Promise((r) => { v.addEventListener('seeked', r, { once: true }); setTimeout(r, 1500); });
+      document.documentElement.classList.add('measure-bg'); await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); })()`);
+    const file = `bg-${w}x${h}-t${t}.png`;
+    await shot(file);
+    out.contrast.push({ file, kicker: await evaluate(rect('.kicker')), title: await evaluate(rect('h1')), sub: await evaluate(rect('.sub')) });
+    await evaluate(`document.documentElement.classList.remove('measure-bg')`);
+  }
+}
+await evaluate(`document.querySelector('.bg').play().catch(() => {})`);
+await viewport(390, 844); await sleep(400);
+
+// 3. Pause control (WCAG 2.2.2): toggles the loop, reflects state, and is remembered
+out.motion = await evaluate(`(async () => {
+  const v = document.querySelector('.bg'), b = document.getElementById('motion');
+  await v.play().catch(() => {}); await new Promise((r) => setTimeout(r, 200));
+  const before = v.paused; b.click(); await new Promise((r) => setTimeout(r, 200));
+  const afterPause = { paused: v.paused, pressed: b.getAttribute('aria-pressed'), saved: localStorage.getItem('magnifica-motion') };
+  b.click(); await new Promise((r) => setTimeout(r, 300));
+  return { before, afterPause, afterResume: { paused: v.paused, pressed: b.getAttribute('aria-pressed') }, label: b.getAttribute('aria-label') };
+})()`);
+
+// 4. Full-screen QR: opens with focus on Close, scans, closes on Escape with focus back on the QR
+out.overlay = { opened: await evaluate(`(async () => { document.getElementById('qrBtn').click();
+  await new Promise((r) => setTimeout(r, 350));
+  return { visible: !document.getElementById('qrOverlay').hidden, focus: document.activeElement.id }; })()`) };
+await shot('qr-overlay.png');
+out.overlay.closed = await evaluate(`(async () => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+  await new Promise((r) => setTimeout(r, 100));
+  return { hidden: document.getElementById('qrOverlay').hidden, focus: document.activeElement.id }; })()`);
+
+// 5. Small phones and landscape: no sideways scroll at 320 px; the whole card reachable in landscape
+await viewport(375, 667); await sleep(400);
 out.se = await evaluate(`(() => { const p = document.querySelector('.panel').getBoundingClientRect();
   return { panelBottom: p.bottom, vh: innerHeight, sw: document.documentElement.scrollWidth }; })()`);
+await viewport(320, 568); await sleep(400);
+out.narrow = await evaluate(`({ sw: document.documentElement.scrollWidth, vw: document.documentElement.clientWidth })`);
+await viewport(844, 390); await sleep(400);
+out.landscape = await evaluate(`(() => { const p = document.querySelector('.panel').getBoundingClientRect();
+  return { overflowY: getComputedStyle(document.body).overflowY, panelBottom: p.bottom + scrollY,
+           scrollHeight: document.scrollingElement.scrollHeight }; })()`);
+await viewport(390, 844); await sleep(400);
 
-// 3. Share: the Web Share payload, then the clipboard fallback when Web Share is unavailable
+// 6. Share: the Web Share payload, then the clipboard fallback when Web Share is unavailable
 out.shared = await evaluate(`(async () => {
   Object.defineProperty(navigator, 'share', { configurable: true, value: async (d) => { window.__shared = d; } });
   document.getElementById('share').click(); await new Promise((r) => setTimeout(r, 50)); return window.__shared;
@@ -79,7 +127,7 @@ out.clipboard = await evaluate(`(async () => {
   document.getElementById('share').click(); await new Promise((r) => setTimeout(r, 50)); return window.__clip;
 })()`);
 
-// 4. Offline: once the service worker controls the page, cut the server and reload
+// 7. Offline: once the service worker controls the page, cut the server and reload
 await evaluate(`navigator.serviceWorker.ready.then(() => true)`);
 await send('Page.reload'); await sleep(2000);
 out.controlled = await evaluate(`!!navigator.serviceWorker.controller`);
