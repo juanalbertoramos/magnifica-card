@@ -1,6 +1,6 @@
 {
   "name": "Magnifica Humanitas",
-  "short_name": "Magnifica",
+  "short_name": "Magnifica Card",
   "description": "Share Pope Leo XIV's first encyclical: scan the QR or tap Share.",
   "start_url": "./",
   "scope": "./",

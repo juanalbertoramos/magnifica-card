@@ -1,6 +1,6 @@
 // Offline support: the card (and its QR) must open with no signal.
 // Bump CACHE whenever a precached file changes, so phones pick up the new copy.
-const CACHE = 'magnifica-card-v5';
+const CACHE = 'magnifica-card-v6';
 const ASSETS = [
   './',
   'index.html',
