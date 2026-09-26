@@ -103,6 +103,11 @@ if PKPASS.exists():
 html = (ROOT / "index.html").read_text(encoding="utf-8")
 start, end = html.find('id="qrOverlay"'), html.find('<div class="toast"')
 check("full-screen QR view links to magnifica.pkpass", start != -1 and 'href="magnifica.pkpass"' in html[start:end])
+# Apple's license allows its badge only as provided: US-UK RGB SVG from the Add to Apple Wallet kit (2021-10-14)
+BADGE, BADGE_SHA256 = ROOT / "add-to-apple-wallet.svg", "052b3b446860fd2f9b49c2f0336038947623a5a9433ee3583585b8552ff6f506"
+check("the link shows Apple's official badge, unmodified",
+      'src="add-to-apple-wallet.svg"' in html[start:end] and BADGE.exists()
+      and hashlib.sha256(BADGE.read_bytes()).hexdigest() == BADGE_SHA256)
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)

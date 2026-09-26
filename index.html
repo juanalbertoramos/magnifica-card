@@ -92,9 +92,10 @@ h1{font:700 var(--fs-xl)/.95 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
 .qr-close{position:fixed;top:calc(env(safe-area-inset-top) + 8px);right:16px;width:44px;height:44px;border-radius:50%;
   display:grid;place-items:center;background:rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
 .qr-close svg{width:18px;height:18px;color:#fff}
-/* a plain text link, not a copy of Apple's badge; iOS answers it with its own Add to Wallet sheet */
-.wallet-link{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;color:var(--gold-bright);
-  font:500 var(--fs-m)/1.3 "Inter";text-decoration:underline;text-underline-offset:4px}
+/* Apple's official Add to Apple Wallet badge, used exactly as provided (its grey outline is Apple's version for
+   dark backgrounds): no effects, no dimming, no animation; padding keeps Apple's clear space of .1 x its height */
+.wallet-link{display:inline-flex;padding:5px;border-radius:12px}
+.wallet-link img{display:block;width:152px;height:48px}
 .wallet-link[hidden]{display:none}
 
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 96px);z-index:4;transform:translate(-50%,16px);opacity:0;
@@ -142,7 +143,7 @@ h1{font:700 var(--fs-xl)/.95 "Cinzel Decorative",Georgia,serif;letter-spacing:.0
     <img src="qr.svg" width="372" height="372" alt="QR code that opens the Magnifica Humanitas reader">
     <p>Scan to read <em>Magnifica Humanitas</em></p>
   </div>
-  <a class="wallet-link" id="walletLink" href="magnifica.pkpass">Add to Apple Wallet</a>
+  <a class="wallet-link" id="walletLink" href="magnifica.pkpass"><img src="add-to-apple-wallet.svg" width="152" height="48" alt="Add to Apple Wallet"></a>
   <button class="qr-close" id="qrClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

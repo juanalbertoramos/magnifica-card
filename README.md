@@ -41,8 +41,9 @@ artwork, and it falls back to the generic layout on earlier iOS. Its QR opens th
 - **Sign and package:** `zsh build/make-pass.sh`. The key and certificates stay outside the repo, in `~/.config/magnifica-card/pass/`
   (Pass Type ID `pass.com.kaelumvisio.magnifica`, team `T76T3LTG9C`). The certificate expires on **2027-10-25**:
   renew it in the Apple Developer portal before then, and re-run the script.
-- **Verify:** `python3 tests/verify_pass.py` runs 32 checks: bundle layout, exact image sizes, manifest hashes, the
-  signature and its chain to Apple WWDR G4, the `pass.json` content, and the link in the full-screen QR view.
+- **Verify:** `python3 tests/verify_pass.py` runs 33 checks: bundle layout, exact image sizes, manifest hashes, the
+  signature and its chain to Apple WWDR G4, the `pass.json` content, and the full-screen QR view's link, which must
+  show Apple's official badge, unmodified.
 
 ## Video encodes
 
@@ -61,4 +62,8 @@ AV1 (SVT-AV1, CRF 38) scored 93.5 at 1.10 MB. It's left out because iPhones deco
   The still is by Nano Banana Pro and the animation by Kling 3.0 Pro (via fal.ai). It plays forward, then in reverse, as a seamless loop.
 - **Fonts:** Cinzel Decorative, Cormorant Garamond and Inter, all under the SIL Open Font License.
 - **QR generator:** [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) by Kazuhiko Arase (MIT), used at build time.
+- **Add to Apple Wallet badge:** Apple's official artwork (`US-UK_Add_to_Apple_Wallet_RGB_101421.svg` from Apple's badge
+  kit), used unmodified under the Apple Wallet Marketing Artwork License that Juan accepted on 2026-09-26. Apple
+  Wallet is a trademark of Apple Inc. The badge's wording can't be changed; `tests/verify_pass.py` checks the file is
+  byte-identical to Apple's.
 - **Text:** the encyclical text in the reader is © Libreria Editrice Vaticana; the reader is an unofficial reader's edition.

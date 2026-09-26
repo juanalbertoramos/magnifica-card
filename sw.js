@@ -1,11 +1,12 @@
 // Offline support: the card (and its QR) must open with no signal.
 // Bump CACHE whenever a precached file changes, so phones pick up the new copy.
-const CACHE = 'magnifica-card-v4';
+const CACHE = 'magnifica-card-v5';
 const ASSETS = [
   './',
   'index.html',
   'bg.jpg',
   'qr.svg',
+  'add-to-apple-wallet.svg',
   'manifest.webmanifest',
   'apple-touch-icon.png',
   'icon-512.png',
